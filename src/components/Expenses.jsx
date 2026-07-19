@@ -24,7 +24,7 @@ export default function Expenses({ tripId }) {
     setError('')
 
     const [{ data: parts, error: pErr }, { data: exps, error: eErr }] = await Promise.all([
-      supabase.from('participants').select('id, name').eq('trip_id', tripId).order('created_at'),
+      supabase.from('participants').select('id, full_name').eq('trip_id', tripId).order('created_at'),
       supabase
         .from('expenses')
         .select('*, expense_participants(participant_id)')
@@ -49,7 +49,7 @@ export default function Expenses({ tripId }) {
 
   const participantsById = useMemo(() => {
     const map = new Map()
-    participants.forEach((p) => map.set(p.id, p.name))
+    participants.forEach((p) => map.set(p.id, p.full_name))
     return map
   }, [participants])
 
@@ -58,7 +58,7 @@ export default function Expenses({ tripId }) {
     setParticipantError('')
     const { data, error } = await supabase
       .from('participants')
-      .insert({ trip_id: tripId, name })
+      .insert({ trip_id: tripId, full_name: name })
       .select()
       .single()
     if (error) {

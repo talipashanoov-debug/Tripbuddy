@@ -7,7 +7,7 @@
 create table if not exists participants (
   id uuid primary key default gen_random_uuid(),
   trip_id uuid not null references trips(id) on delete cascade,
-  name text not null,
+  full_name text not null,
   created_at timestamptz default now()
 );
 

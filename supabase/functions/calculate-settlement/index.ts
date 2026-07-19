@@ -23,7 +23,7 @@ const corsHeaders = {
 
 interface Participant {
   id: string;
-  name: string;
+  full_name: string;
 }
 
 interface Expense {
@@ -55,7 +55,7 @@ function calculateSettlement(
   tripId: string,
 ) {
   const nameById = new Map<string, string>();
-  participants.forEach((p) => nameById.set(p.id, p.name));
+  participants.forEach((p) => nameById.set(p.id, p.full_name));
 
   // Group participant ids by expense.
   const sharersByExpense = new Map<string, string[]>();
@@ -134,7 +134,7 @@ function calculateSettlement(
     participant_count: participants.length,
     balances: participants.map((p) => ({
       participant_id: p.id,
-      name: p.name,
+      name: p.full_name,
       net: net.get(p.id)!,
     })),
     settlements,
@@ -182,7 +182,7 @@ Deno.serve(async (req) => {
 
     const { data: participants, error: pErr } = await adminClient
       .from("participants")
-      .select("id, name")
+      .select("id, full_name")
       .eq("trip_id", trip_id);
     if (pErr) return json({ error: pErr.message }, 400);
 

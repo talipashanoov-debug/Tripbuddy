@@ -40,7 +40,7 @@ export default function Participants({ participants, onAdd, onDelete, error }) {
               key={p.id}
               className="inline-flex items-center gap-1.5 rounded-full bg-slate-50 py-1 pe-2 ps-3 text-sm ring-1 ring-slate-200"
             >
-              <span className="text-slate-700">{p.name}</span>
+              <span className="text-slate-700">{p.full_name}</span>
               <button
                 onClick={() => onDelete(p.id)}
                 aria-label={t.participants.deleteAria}

@@ -125,7 +125,7 @@ export default function AddExpenseModal({ open, onClose, onCreate, participants 
           <select value={paidBy} onChange={(e) => setPaidBy(e.target.value)} className={inputClass}>
             {participants.map((p) => (
               <option key={p.id} value={p.id}>
-                {p.name}
+                {p.full_name}
               </option>
             ))}
           </select>
@@ -158,7 +158,7 @@ export default function AddExpenseModal({ open, onClose, onCreate, participants 
                       : 'bg-white text-slate-600 ring-slate-300 hover:bg-slate-50'
                   }`}
                 >
-                  {p.name}
+                  {p.full_name}
                 </button>
               )
             })}
