@@ -37,7 +37,7 @@ export default function Modal({ open, onClose, title, children }) {
           <h2 className="text-lg font-semibold text-slate-800">{title}</h2>
           <button
             onClick={onClose}
-            aria-label="Close"
+            aria-label="סגור"
             className="rounded-lg p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 active:bg-slate-200"
           >
             <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">

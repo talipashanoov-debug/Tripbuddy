@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../context/AuthContext'
 import { formatDateRange } from '../lib/formatDate'
+import { t } from '../lib/strings'
 import Navbar from '../components/Navbar'
 import CreateTripModal from '../components/CreateTripModal'
 
@@ -78,8 +79,8 @@ export default function Dashboard() {
       <main className="mx-auto max-w-5xl px-4 py-8">
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-slate-800">Your trips</h1>
-            <p className="text-sm text-slate-500">Plan, share, and split — all in one place.</p>
+            <h1 className="text-2xl font-bold text-slate-800">{t.dashboard.yourTrips}</h1>
+            <p className="text-sm text-slate-500">{t.dashboard.subtitle}</p>
           </div>
           <button
             onClick={() => setModalOpen(true)}
@@ -88,7 +89,7 @@ export default function Dashboard() {
             <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
               <path d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" />
             </svg>
-            Create New Trip
+            {t.dashboard.createTrip}
           </button>
         </div>
 
@@ -157,13 +158,13 @@ function EmptyState({ onCreate }) {
   return (
     <div className="rounded-2xl border-2 border-dashed border-slate-200 py-16 text-center">
       <div className="text-4xl">🗺️</div>
-      <h3 className="mt-3 font-semibold text-slate-700">No trips yet</h3>
-      <p className="mt-1 text-sm text-slate-500">Create your first trip to get started.</p>
+      <h3 className="mt-3 font-semibold text-slate-700">{t.dashboard.emptyTitle}</h3>
+      <p className="mt-1 text-sm text-slate-500">{t.dashboard.emptyText}</p>
       <button
         onClick={onCreate}
         className="mt-4 inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 active:bg-emerald-800"
       >
-        Create New Trip
+        {t.dashboard.createTrip}
       </button>
     </div>
   )

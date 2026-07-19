@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="he" dir="rtl">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -12,13 +12,13 @@
         if (root && !root.hasChildNodes()) {
           root.innerHTML =
             '<div style="font-family:system-ui,sans-serif;max-width:640px;margin:80px auto;padding:24px;border:1px solid #e2e8f0;border-radius:12px;color:#0f172a">' +
-            '<h1 style="font-size:20px;margin:0 0 8px">🧳 TripBuddy failed to start</h1>' +
+            '<h1 style="font-size:20px;margin:0 0 8px">🧳 TripBuddy נכשל בהפעלה</h1>' +
             '<p style="color:#475569;margin:0 0 12px">' +
-            (e && e.message ? e.message : 'An unexpected error occurred during startup.') +
+            (e && e.message ? e.message : 'אירעה שגיאה בלתי צפויה בהפעלה.') +
             '</p>' +
-            '<p style="color:#94a3b8;font-size:13px;margin:0">If this is a deployment, verify that ' +
-            '<code>VITE_SUPABASE_URL</code> and <code>VITE_SUPABASE_ANON_KEY</code> are set in your host, ' +
-            'and that you <strong>redeployed</strong> after setting them (Vite bakes them in at build time).</p>' +
+            '<p style="color:#94a3b8;font-size:13px;margin:0">בפריסה: ודאו ש-' +
+            '<code>VITE_SUPABASE_URL</code> ו-<code>VITE_SUPABASE_ANON_KEY</code> מוגדרים, ' +
+            'ושביצעתם <strong>פריסה מחדש</strong> אחרי ההגדרה (Vite מטמיע אותם בזמן הבנייה).</p>' +
             '</div>'
         }
       })

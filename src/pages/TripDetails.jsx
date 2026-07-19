@@ -1,16 +1,17 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { ChevronLeft, MapPin, Compass } from 'lucide-react'
+import { ChevronRight, MapPin, Compass } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { formatDateRange } from '../lib/formatDate'
+import { t } from '../lib/strings'
 import Navbar from '../components/Navbar'
 import Itinerary from '../components/Itinerary'
 import Expenses from '../components/Expenses'
 import TripMembers from '../components/TripMembers'
 
 const TABS = [
-  { key: 'itinerary', label: 'Itinerary' },
-  { key: 'expenses', label: 'Expenses' },
+  { key: 'itinerary', label: t.trip.tabItinerary },
+  { key: 'expenses', label: t.trip.tabExpenses },
 ]
 
 export default function TripDetails() {
@@ -61,8 +62,8 @@ export default function TripDetails() {
           to="/"
           className="inline-flex items-center gap-1.5 rounded-lg text-sm font-medium text-slate-500 transition-colors hover:text-slate-800 active:text-slate-900"
         >
-          <ChevronLeft className="h-4 w-4" />
-          Back to Dashboard
+          <ChevronRight className="h-4 w-4" />
+          {t.trip.back}
         </Link>
 
         {loading ? (
@@ -139,19 +140,14 @@ function AccessDeniedCard() {
       <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 text-slate-400">
         <Compass className="h-7 w-7" />
       </div>
-      <h2 className="mt-4 text-lg font-semibold text-slate-800">
-        Trip Not Found or Access Denied
-      </h2>
-      <p className="mx-auto mt-1 max-w-sm px-4 text-sm text-slate-500">
-        This trip doesn't exist, or you're not a member of it. Ask a member to add you, or head
-        back to your dashboard.
-      </p>
+      <h2 className="mt-4 text-lg font-semibold text-slate-800">{t.trip.notFoundTitle}</h2>
+      <p className="mx-auto mt-1 max-w-sm px-4 text-sm text-slate-500">{t.trip.notFoundText}</p>
       <Link
         to="/"
         className="mt-5 inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 active:bg-emerald-800"
       >
-        <ChevronLeft className="h-4 w-4" />
-        Back to Dashboard
+        <ChevronRight className="h-4 w-4" />
+        {t.trip.back}
       </Link>
     </div>
   )
@@ -161,15 +157,13 @@ function ErrorCard({ message }) {
   return (
     <div className="mt-4 rounded-2xl bg-red-50 p-8 text-center ring-1 ring-red-100">
       <div className="text-4xl">😕</div>
-      <p className="mt-3 text-sm font-medium text-red-700">
-        Something went wrong while loading this trip.
-      </p>
+      <p className="mt-3 text-sm font-medium text-red-700">{t.trip.loadError}</p>
       <p className="mt-1 text-xs text-red-500">{message}</p>
       <Link
         to="/"
         className="mt-4 inline-block rounded-lg bg-white px-4 py-2 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 transition-colors hover:bg-slate-50 active:bg-slate-100"
       >
-        Back to Dashboard
+        {t.trip.back}
       </Link>
     </div>
   )

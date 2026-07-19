@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Clock, MapPin, Plus, CalendarDays, Trash2 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { formatDayHeading, formatTime } from '../lib/formatDate'
+import { t } from '../lib/strings'
 import AddActivityModal from './AddActivityModal'
 
 // Keep a flat, sorted list in state; group for rendering only.
@@ -90,13 +91,13 @@ export default function Itinerary({ tripId }) {
   return (
     <div>
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-lg font-semibold text-slate-800">Daily schedule</h2>
+        <h2 className="text-lg font-semibold text-slate-800">{t.itinerary.heading}</h2>
         <button
           onClick={() => setModalOpen(true)}
           className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 active:bg-emerald-800 sm:w-auto"
         >
           <Plus className="h-4 w-4" />
-          Add Activity
+          {t.itinerary.add}
         </button>
       </div>
 
@@ -146,11 +147,11 @@ function DaySection({ date, activities, onDelete }) {
         </h3>
       </div>
 
-      {/* Timeline: a vertical line with a dot per activity. */}
-      <ol className="relative space-y-3 border-l-2 border-slate-100 pl-6">
+      {/* Timeline: a vertical line with a dot per activity (RTL: on the right). */}
+      <ol className="relative space-y-3 border-s-2 border-slate-100 ps-6">
         {activities.map((activity) => (
           <li key={activity.id} className="relative">
-            <span className="absolute -left-[1.9rem] top-1.5 h-3 w-3 rounded-full border-2 border-white bg-emerald-500 ring-1 ring-emerald-200" />
+            <span className="absolute -start-[1.9rem] top-1.5 h-3 w-3 rounded-full border-2 border-white bg-emerald-500 ring-1 ring-emerald-200" />
             <div className="flex items-start justify-between gap-3 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
               <div className="min-w-0">
                 <p className="font-medium text-slate-800">{activity.title}</p>
@@ -171,7 +172,7 @@ function DaySection({ date, activities, onDelete }) {
               </div>
               <button
                 onClick={() => onDelete(activity.id)}
-                aria-label="Delete activity"
+                aria-label={t.itinerary.deleteAria}
                 className="shrink-0 rounded-lg p-1.5 text-slate-300 transition-colors hover:bg-red-50 hover:text-red-500 active:bg-red-100"
               >
                 <Trash2 className="h-4 w-4" />
@@ -188,14 +189,14 @@ function EmptyState({ onAdd }) {
   return (
     <div className="rounded-2xl border-2 border-dashed border-slate-200 py-12 text-center">
       <div className="text-4xl">🗓️</div>
-      <h3 className="mt-3 font-semibold text-slate-700">No activities planned</h3>
-      <p className="mt-1 text-sm text-slate-500">Add your first activity to build the schedule.</p>
+      <h3 className="mt-3 font-semibold text-slate-700">{t.itinerary.emptyTitle}</h3>
+      <p className="mt-1 text-sm text-slate-500">{t.itinerary.emptyText}</p>
       <button
         onClick={onAdd}
         className="mt-4 inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 active:bg-emerald-800"
       >
         <Plus className="h-4 w-4" />
-        Add Activity
+        {t.itinerary.add}
       </button>
     </div>
   )

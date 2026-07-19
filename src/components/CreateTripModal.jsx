@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import Modal from './Modal'
+import { t } from '../lib/strings'
 
 const EMPTY = { title: '', destination: '', start_date: '', end_date: '' }
 
@@ -24,7 +25,7 @@ export default function CreateTripModal({ open, onClose, onCreate }) {
     setError('')
 
     if (form.end_date && form.start_date && form.end_date < form.start_date) {
-      setError('End date cannot be before the start date.')
+      setError(t.tripForm.dateError)
       return
     }
 
@@ -34,7 +35,7 @@ export default function CreateTripModal({ open, onClose, onCreate }) {
       setForm(EMPTY)
       onClose()
     } catch (err) {
-      setError(err.message ?? 'Something went wrong. Please try again.')
+      setError(err.message ?? 'שגיאה. נסו שוב.')
     } finally {
       setLoading(false)
     }
@@ -44,35 +45,39 @@ export default function CreateTripModal({ open, onClose, onCreate }) {
     'w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none'
 
   return (
-    <Modal open={open} onClose={close} title="Create a new trip">
+    <Modal open={open} onClose={close} title={t.tripForm.heading}>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Title</label>
+          <label className="block text-sm font-medium text-slate-700 mb-1">{t.tripForm.title}</label>
           <input
             type="text"
             required
             value={form.title}
             onChange={update('title')}
-            placeholder="Summer in Italy"
+            placeholder="הקיץ באיטליה"
             className={inputClass}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Destination</label>
+          <label className="block text-sm font-medium text-slate-700 mb-1">
+            {t.tripForm.destination}
+          </label>
           <input
             type="text"
             required
             value={form.destination}
             onChange={update('destination')}
-            placeholder="Rome, Italy"
+            placeholder="רומא, איטליה"
             className={inputClass}
           />
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Start date</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              {t.tripForm.startDate}
+            </label>
             <input
               type="date"
               required
@@ -82,7 +87,9 @@ export default function CreateTripModal({ open, onClose, onCreate }) {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">End date</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              {t.tripForm.endDate}
+            </label>
             <input
               type="date"
               required
@@ -102,14 +109,14 @@ export default function CreateTripModal({ open, onClose, onCreate }) {
             disabled={loading}
             className="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 active:bg-slate-200 disabled:opacity-60"
           >
-            Cancel
+            {t.tripForm.cancel}
           </button>
           <button
             type="submit"
             disabled={loading}
             className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 active:bg-emerald-800 disabled:opacity-60"
           >
-            {loading ? 'Creating…' : 'Create trip'}
+            {loading ? t.tripForm.creating : t.tripForm.create}
           </button>
         </div>
       </form>

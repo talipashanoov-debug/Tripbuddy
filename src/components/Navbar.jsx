@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { LogOut } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import { t } from '../lib/strings'
 
 // Shared top navigation used across authenticated pages.
 export default function Navbar() {
@@ -26,7 +27,7 @@ export default function Navbar() {
             className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 active:bg-slate-200"
           >
             <LogOut className="h-4 w-4" />
-            <span className="hidden sm:inline">Logout</span>
+            <span className="hidden sm:inline">{t.nav.logout}</span>
           </button>
         </div>
       </div>

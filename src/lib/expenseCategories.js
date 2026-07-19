@@ -1,12 +1,13 @@
 import { UtensilsCrossed, Car, BedDouble, Ticket, Receipt } from 'lucide-react'
 
 // Category metadata: icon + badge colors, all on-theme with our emerald/slate palette.
+// `value` is stored in the DB (English); `label` is the Hebrew display text.
 export const EXPENSE_CATEGORIES = [
-  { value: 'Food', Icon: UtensilsCrossed, badge: 'bg-orange-100 text-orange-700' },
-  { value: 'Transport', Icon: Car, badge: 'bg-sky-100 text-sky-700' },
-  { value: 'Accommodation', Icon: BedDouble, badge: 'bg-violet-100 text-violet-700' },
-  { value: 'Activities', Icon: Ticket, badge: 'bg-emerald-100 text-emerald-700' },
-  { value: 'Other', Icon: Receipt, badge: 'bg-slate-100 text-slate-600' },
+  { value: 'Food', label: 'אוכל', Icon: UtensilsCrossed, badge: 'bg-orange-100 text-orange-700' },
+  { value: 'Transport', label: 'תחבורה', Icon: Car, badge: 'bg-sky-100 text-sky-700' },
+  { value: 'Accommodation', label: 'לינה', Icon: BedDouble, badge: 'bg-violet-100 text-violet-700' },
+  { value: 'Activities', label: 'פעילויות', Icon: Ticket, badge: 'bg-emerald-100 text-emerald-700' },
+  { value: 'Other', label: 'אחר', Icon: Receipt, badge: 'bg-slate-100 text-slate-600' },
 ]
 
 const VALUES = EXPENSE_CATEGORIES.map((c) => c.value)

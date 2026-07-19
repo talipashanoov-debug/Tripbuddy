@@ -1,18 +1,16 @@
 // Supabase Edge Function: calculate-settlement
 // -------------------------------------------------
-// Given a `trip_id`, this function:
-//   1. Authenticates the caller and verifies they are a member of the trip.
-//   2. Fetches all trip members and all expenses (server-side, trusted).
-//   3. Splits the total cost equally and computes the minimal set of
-//      payments ("who owes whom") needed to settle everyone up.
+// Given a `trip_id`, splits EACH expense equally among the participants
+// selected for that expense, then computes the minimal set of payments
+// ("who owes whom") to settle everyone up.
 //
-// Why an Edge Function and not client-side logic?
-//   - The settlement is authoritative and identical for every member.
-//   - It needs to read other users' emails via the service role, which
-//     must never be exposed to the browser.
+//   - Each expense is credited to its `paid_by_participant`.
+//   - Each expense is split only among the participants linked to it via
+//     `expense_participants`.
+//   - Balances/settlements are keyed by participant (named people), NOT users.
 //
-// Env vars (auto-injected by the Supabase platform):
-//   SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY
+// Authorization still uses trip_members + the caller's JWT: only a member of
+// the trip may run it.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
@@ -23,13 +21,20 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-interface Member {
-  user_id: string;
+interface Participant {
+  id: string;
+  name: string;
 }
 
 interface Expense {
+  id: string;
   amount: number | string;
-  paid_by: string;
+  paid_by_participant: string | null;
+}
+
+interface Link {
+  expense_id: string;
+  participant_id: string;
 }
 
 function json(body: unknown, status = 200): Response {
@@ -39,53 +44,67 @@ function json(body: unknown, status = 200): Response {
   });
 }
 
-// Round to 2 decimals (cents), avoiding binary float drift.
 function round(n: number): number {
   return Math.round((n + Number.EPSILON) * 100) / 100;
 }
 
 function calculateSettlement(
-  members: Member[],
+  participants: Participant[],
   expenses: Expense[],
-  emailById: Map<string, string>,
+  links: Link[],
   tripId: string,
 ) {
-  const memberIds = members.map((m) => m.user_id);
-  const n = memberIds.length;
+  const nameById = new Map<string, string>();
+  participants.forEach((p) => nameById.set(p.id, p.name));
 
-  const total = expenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
-  const share = n > 0 ? total / n : 0;
+  // Group participant ids by expense.
+  const sharersByExpense = new Map<string, string[]>();
+  for (const link of links) {
+    if (!sharersByExpense.has(link.expense_id)) {
+      sharersByExpense.set(link.expense_id, []);
+    }
+    sharersByExpense.get(link.expense_id)!.push(link.participant_id);
+  }
 
-  // net = (what a member paid) - (their equal share).
-  //   net > 0  → the group owes them (creditor)
-  //   net < 0  → they owe the group (debtor)
   const net = new Map<string, number>();
-  memberIds.forEach((id) => net.set(id, -share));
+  participants.forEach((p) => net.set(p.id, 0));
 
+  let total = 0;
   for (const e of expenses) {
-    // In this app paid_by is always a current member; guard just in case.
-    if (net.has(e.paid_by)) {
-      net.set(e.paid_by, net.get(e.paid_by)! + (Number(e.amount) || 0));
+    const amount = Number(e.amount) || 0;
+    const sharers = (sharersByExpense.get(e.id) ?? []).filter((id) => net.has(id));
+    if (sharers.length === 0) continue; // can't split with nobody
+    total += amount;
+
+    // Credit the payer for the full amount.
+    if (e.paid_by_participant && net.has(e.paid_by_participant)) {
+      net.set(e.paid_by_participant, net.get(e.paid_by_participant)! + amount);
+    }
+    // Debit each sharer their equal slice.
+    const slice = amount / sharers.length;
+    for (const id of sharers) {
+      net.set(id, net.get(id)! - slice);
     }
   }
-  memberIds.forEach((id) => net.set(id, round(net.get(id)!)));
 
-  // Greedy min-cash-flow: match biggest debtor to biggest creditor.
+  participants.forEach((p) => net.set(p.id, round(net.get(p.id)!)));
+
+  // Greedy min-cash-flow: biggest debtor pays biggest creditor.
   const creditors: { id: string; amount: number }[] = [];
   const debtors: { id: string; amount: number }[] = [];
-  for (const id of memberIds) {
-    const value = net.get(id)!;
-    if (value > 0.005) creditors.push({ id, amount: value });
-    else if (value < -0.005) debtors.push({ id, amount: -value });
+  for (const p of participants) {
+    const value = net.get(p.id)!;
+    if (value > 0.005) creditors.push({ id: p.id, amount: value });
+    else if (value < -0.005) debtors.push({ id: p.id, amount: -value });
   }
   creditors.sort((a, b) => b.amount - a.amount);
   debtors.sort((a, b) => b.amount - a.amount);
 
   const settlements: {
-    from_user_id: string;
-    from_email: string;
-    to_user_id: string;
-    to_email: string;
+    from_participant_id: string;
+    from_name: string;
+    to_participant_id: string;
+    to_name: string;
     amount: number;
   }[] = [];
 
@@ -95,10 +114,10 @@ function calculateSettlement(
     const pay = round(Math.min(debtors[i].amount, creditors[j].amount));
     if (pay > 0) {
       settlements.push({
-        from_user_id: debtors[i].id,
-        from_email: emailById.get(debtors[i].id) ?? "Unknown",
-        to_user_id: creditors[j].id,
-        to_email: emailById.get(creditors[j].id) ?? "Unknown",
+        from_participant_id: debtors[i].id,
+        from_name: nameById.get(debtors[i].id) ?? "?",
+        to_participant_id: creditors[j].id,
+        to_name: nameById.get(creditors[j].id) ?? "?",
         amount: pay,
       });
     }
@@ -112,12 +131,11 @@ function calculateSettlement(
     trip_id: tripId,
     currency: "USD",
     total: round(total),
-    per_person: round(share),
-    member_count: n,
-    balances: memberIds.map((id) => ({
-      user_id: id,
-      email: emailById.get(id) ?? "Unknown",
-      net: net.get(id)!,
+    participant_count: participants.length,
+    balances: participants.map((p) => ({
+      participant_id: p.id,
+      name: p.name,
+      net: net.get(p.id)!,
     })),
     settlements,
   };
@@ -139,7 +157,6 @@ Deno.serve(async (req) => {
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    // 1. Client acting AS the caller — respects RLS, used only to authorize.
     const userClient = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: authHeader } },
     });
@@ -150,45 +167,46 @@ Deno.serve(async (req) => {
     } = await userClient.auth.getUser();
     if (userError || !user) return json({ error: "Unauthorized" }, 401);
 
-    // 2. Verify caller is a member of this trip (RLS-enforced).
     const { data: membership, error: membershipError } = await userClient
       .from("trip_members")
       .select("id")
       .eq("trip_id", trip_id)
       .eq("user_id", user.id)
       .maybeSingle();
-
     if (membershipError) return json({ error: membershipError.message }, 400);
     if (!membership) {
       return json({ error: "Forbidden: you are not a member of this trip." }, 403);
     }
 
-    // 3. Trusted service-role client — reads are now authorized.
     const adminClient = createClient(supabaseUrl, serviceKey);
 
-    const { data: members, error: membersError } = await adminClient
-      .from("trip_members")
-      .select("user_id")
+    const { data: participants, error: pErr } = await adminClient
+      .from("participants")
+      .select("id, name")
       .eq("trip_id", trip_id);
-    if (membersError) return json({ error: membersError.message }, 400);
+    if (pErr) return json({ error: pErr.message }, 400);
 
-    const { data: expenses, error: expensesError } = await adminClient
+    const { data: expenses, error: eErr } = await adminClient
       .from("expenses")
-      .select("amount, paid_by")
+      .select("id, amount, paid_by_participant")
       .eq("trip_id", trip_id);
-    if (expensesError) return json({ error: expensesError.message }, 400);
+    if (eErr) return json({ error: eErr.message }, 400);
 
-    // Resolve member emails for a human-readable settlement plan.
-    const emailById = new Map<string, string>();
-    for (const m of (members ?? []) as Member[]) {
-      const { data } = await adminClient.auth.admin.getUserById(m.user_id);
-      emailById.set(m.user_id, data?.user?.email ?? "Unknown");
+    const expenseIds = (expenses ?? []).map((e) => e.id);
+    let links: Link[] = [];
+    if (expenseIds.length > 0) {
+      const { data: linkRows, error: lErr } = await adminClient
+        .from("expense_participants")
+        .select("expense_id, participant_id")
+        .in("expense_id", expenseIds);
+      if (lErr) return json({ error: lErr.message }, 400);
+      links = (linkRows ?? []) as Link[];
     }
 
     const result = calculateSettlement(
-      (members ?? []) as Member[],
+      (participants ?? []) as Participant[],
       (expenses ?? []) as Expense[],
-      emailById,
+      links,
       trip_id,
     );
 
