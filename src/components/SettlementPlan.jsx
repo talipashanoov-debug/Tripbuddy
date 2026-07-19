@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { ArrowRight, HandCoins, Sparkles } from 'lucide-react'
-import { supabase } from '../lib/supabaseClient'
+import { invokeFunction } from '../lib/invokeFunction'
 import { formatCurrency } from '../lib/formatCurrency'
 
 // Calls the `calculate-settlement` Edge Function. supabase.functions.invoke
@@ -15,27 +15,15 @@ export default function SettlementPlan({ tripId }) {
     setLoading(true)
     setError('')
 
-    const { data, error } = await supabase.functions.invoke('calculate-settlement', {
-      body: { trip_id: tripId },
+    const { data, error } = await invokeFunction('calculate-settlement', {
+      trip_id: tripId,
     })
 
     if (error) {
-      // Non-2xx responses expose the body via error.context (a Response).
-      let message = error.message
-      if (error.context && typeof error.context.json === 'function') {
-        try {
-          const body = await error.context.json()
-          if (body?.error) message = body.error
-        } catch {
-          /* keep the default message */
-        }
-      }
-      setError(message)
-      setLoading(false)
-      return
+      setError(error)
+    } else {
+      setResult(data)
     }
-
-    setResult(data)
     setLoading(false)
   }
 

@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Plus, Receipt, Wallet } from 'lucide-react'
+import { Plus, Trash2, Wallet } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../context/AuthContext'
 import { formatCurrency } from '../lib/formatCurrency'
 import { formatShortDate } from '../lib/formatDate'
+import { encodeDescription, parseDescription, getCategory } from '../lib/expenseCategories'
 import AddExpenseModal from './AddExpenseModal'
 import SettlementPlan from './SettlementPlan'
 
@@ -38,12 +39,13 @@ export default function Expenses({ tripId }) {
     fetchExpenses()
   }, [fetchExpenses])
 
-  const handleCreate = async ({ description, amount }) => {
+  const handleCreate = async ({ description, amount, category }) => {
     const { data: expense, error } = await supabase
       .from('expenses')
       .insert({
         trip_id: tripId,
-        description: description.trim(),
+        // Category is encoded into the description as "Category: text".
+        description: encodeDescription(category, description),
         amount,
         paid_by: user.id, // current user is the payer
       })
@@ -54,6 +56,18 @@ export default function Expenses({ tripId }) {
 
     // Newest first — prepend for an instant update (total recomputes below).
     setExpenses((prev) => [expense, ...prev])
+  }
+
+  const handleDelete = async (id) => {
+    const previous = expenses
+    // Optimistic remove — total recomputes instantly via useMemo.
+    setExpenses((prev) => prev.filter((e) => e.id !== id))
+
+    const { error } = await supabase.from('expenses').delete().eq('id', id)
+    if (error) {
+      setExpenses(previous) // roll back on failure
+      setError(error.message)
+    }
   }
 
   const total = useMemo(
@@ -100,23 +114,43 @@ export default function Expenses({ tripId }) {
         <EmptyState onAdd={() => setModalOpen(true)} />
       ) : (
         <ul className="space-y-3">
-          {expenses.map((expense) => (
-            <li
-              key={expense.id}
-              className="flex items-center justify-between rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200"
-            >
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
-                  <Receipt className="h-5 w-5" />
+          {expenses.map((expense) => {
+            const { category, text } = parseDescription(expense.description)
+            const { Icon, badge } = getCategory(category)
+            return (
+              <li
+                key={expense.id}
+                className="group flex items-center justify-between gap-3 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200"
+              >
+                <div className="flex min-w-0 items-center gap-3">
+                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${badge}`}>
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="truncate font-medium text-slate-800">{text}</p>
+                    <div className="mt-0.5 flex items-center gap-2">
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${badge}`}>
+                        {category}
+                      </span>
+                      <span className="text-xs text-slate-400">
+                        {formatShortDate(expense.created_at)}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-medium text-slate-800">{expense.description}</p>
-                  <p className="text-xs text-slate-400">{formatShortDate(expense.created_at)}</p>
+                <div className="flex shrink-0 items-center gap-1">
+                  <p className="font-semibold text-slate-800">{formatCurrency(expense.amount)}</p>
+                  <button
+                    onClick={() => handleDelete(expense.id)}
+                    aria-label="Delete expense"
+                    className="rounded-lg p-1.5 text-slate-300 transition-colors hover:bg-red-50 hover:text-red-500 active:bg-red-100"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
                 </div>
-              </div>
-              <p className="font-semibold text-slate-800">{formatCurrency(expense.amount)}</p>
-            </li>
-          ))}
+              </li>
+            )
+          })}
         </ul>
       )}
 

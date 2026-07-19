@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import Modal from './Modal'
+import { EXPENSE_CATEGORIES } from '../lib/expenseCategories'
 
-const EMPTY = { description: '', amount: '' }
+const EMPTY = { description: '', amount: '', category: 'Food' }
 
 // Presentational form. The parent owns the DB write via `onCreate`,
 // which resolves on success or throws on failure.
@@ -31,7 +32,7 @@ export default function AddExpenseModal({ open, onClose, onCreate }) {
 
     setLoading(true)
     try {
-      await onCreate({ description: form.description, amount })
+      await onCreate({ description: form.description, amount, category: form.category })
       setForm(EMPTY)
       onClose()
     } catch (err) {
@@ -57,6 +58,21 @@ export default function AddExpenseModal({ open, onClose, onCreate }) {
             placeholder="Dinner at Trattoria"
             className={inputClass}
           />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Category</label>
+          <select
+            value={form.category}
+            onChange={update('category')}
+            className={inputClass}
+          >
+            {EXPENSE_CATEGORIES.map((c) => (
+              <option key={c.value} value={c.value}>
+                {c.value}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div>

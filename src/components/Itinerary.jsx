@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Clock, MapPin, Plus, CalendarDays } from 'lucide-react'
+import { Clock, MapPin, Plus, CalendarDays, Trash2 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { formatDayHeading, formatTime } from '../lib/formatDate'
 import AddActivityModal from './AddActivityModal'
@@ -74,6 +74,17 @@ export default function Itinerary({ tripId }) {
     setActivities((prev) => sortActivities([...prev, activity]))
   }
 
+  const handleDelete = async (id) => {
+    const previous = activities
+    setActivities((prev) => prev.filter((a) => a.id !== id)) // optimistic
+
+    const { error } = await supabase.from('activities').delete().eq('id', id)
+    if (error) {
+      setActivities(previous) // roll back on failure
+      setError(error.message)
+    }
+  }
+
   const days = useMemo(() => groupByDate(activities), [activities])
 
   return (
@@ -106,7 +117,12 @@ export default function Itinerary({ tripId }) {
       ) : (
         <div className="space-y-8">
           {days.map(({ date, activities }) => (
-            <DaySection key={date} date={date} activities={activities} />
+            <DaySection
+              key={date}
+              date={date}
+              activities={activities}
+              onDelete={handleDelete}
+            />
           ))}
         </div>
       )}
@@ -120,7 +136,7 @@ export default function Itinerary({ tripId }) {
   )
 }
 
-function DaySection({ date, activities }) {
+function DaySection({ date, activities, onDelete }) {
   return (
     <section>
       <div className="mb-3 flex items-center gap-2">
@@ -135,22 +151,31 @@ function DaySection({ date, activities }) {
         {activities.map((activity) => (
           <li key={activity.id} className="relative">
             <span className="absolute -left-[1.9rem] top-1.5 h-3 w-3 rounded-full border-2 border-white bg-emerald-500 ring-1 ring-emerald-200" />
-            <div className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
-              <p className="font-medium text-slate-800">{activity.title}</p>
-              <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-500">
-                {activity.start_time && (
-                  <span className="inline-flex items-center gap-1">
-                    <Clock className="h-3.5 w-3.5" />
-                    {formatTime(activity.start_time)}
-                  </span>
-                )}
-                {activity.location && (
-                  <span className="inline-flex items-center gap-1">
-                    <MapPin className="h-3.5 w-3.5" />
-                    {activity.location}
-                  </span>
-                )}
+            <div className="flex items-start justify-between gap-3 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+              <div className="min-w-0">
+                <p className="font-medium text-slate-800">{activity.title}</p>
+                <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-500">
+                  {activity.start_time && (
+                    <span className="inline-flex items-center gap-1">
+                      <Clock className="h-3.5 w-3.5" />
+                      {formatTime(activity.start_time)}
+                    </span>
+                  )}
+                  {activity.location && (
+                    <span className="inline-flex items-center gap-1">
+                      <MapPin className="h-3.5 w-3.5" />
+                      {activity.location}
+                    </span>
+                  )}
+                </div>
               </div>
+              <button
+                onClick={() => onDelete(activity.id)}
+                aria-label="Delete activity"
+                className="shrink-0 rounded-lg p-1.5 text-slate-300 transition-colors hover:bg-red-50 hover:text-red-500 active:bg-red-100"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
             </div>
           </li>
         ))}

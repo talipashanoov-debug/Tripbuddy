@@ -6,6 +6,7 @@ import { formatDateRange } from '../lib/formatDate'
 import Navbar from '../components/Navbar'
 import Itinerary from '../components/Itinerary'
 import Expenses from '../components/Expenses'
+import TripMembers from '../components/TripMembers'
 
 const TABS = [
   { key: 'itinerary', label: 'Itinerary' },
@@ -83,6 +84,11 @@ export default function TripDetails() {
                 {formatDateRange(trip.start_date, trip.end_date)}
               </p>
             </header>
+
+            {/* Members */}
+            <div className="mt-6">
+              <TripMembers tripId={trip.id} />
+            </div>
 
             {/* Tabs */}
             <div className="mt-6">

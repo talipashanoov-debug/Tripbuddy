@@ -81,7 +81,10 @@ TripBuddy's advantage is **consolidation with context**:
 - 🧭 **Dashboard** — see all trips you belong to; create a new trip from a modal.
 - 📅 **Trip Details** — a dedicated page per trip with a tabbed **Itinerary** / **Expenses** interface.
 - 🗓️ **Itinerary** — add activities (title, date, start time, location); they're grouped by day into a clean timeline.
-- 💸 **Expenses** — log shared expenses with a live running **Total Expenses** summary.
+- 💸 **Expenses** — log **categorised** shared expenses (Food, Transport, Accommodation, Activities, Other) with a live running **Total Expenses** summary.
+- 🤝 **Settlement plan** — a Supabase Edge Function computes the minimal set of payments to settle the group up.
+- 👥 **Trip members** — see who's on a trip and invite collaborators by email or user ID.
+- 🗑️ **Full CRUD** — add and delete activities and expenses, with instant optimistic UI updates.
 - ⚡ **Instant UI updates** — new trips, activities, and expenses appear immediately without a page refresh.
 - 📱 **Responsive design** — built mobile-first with Tailwind CSS.
 
@@ -108,7 +111,7 @@ TripBuddy relies on the **Supabase** platform for its entire backend. The indivi
 |---------|----------------------|--------|
 | **Supabase Auth** | Handles user authentication — email/password sign-up, sign-in, and session management. Powers the app's protected routes. | ✅ Implemented |
 | **Supabase Database** (PostgreSQL) | Primary data store for `trips`, `trip_members`, `activities`, and `expenses`. **Row-Level Security (RLS)** policies ensure users can only access trips they are a member of. | ✅ Implemented |
-| **Supabase Edge Functions** | Hosts the **`calculate-settlement`** function — server-side logic that splits a trip's expenses equally and computes the minimal **"who owes whom"** payment plan. Runs with the service role to read member details securely, and authorizes the caller against trip membership before responding. | ✅ Implemented |
+| **Supabase Edge Functions** | Hosts two functions: **`calculate-settlement`** (splits expenses equally and computes the minimal **"who owes whom"** payment plan) and **`manage-members`** (lists members with emails and lets the creator invite others). Both run with the service role for secure access to `auth.users`, and authorize the caller against trip membership before responding. | ✅ Implemented |
 
 > **Note:** All three Supabase services are in active use. The settlement calculation is intentionally performed in an Edge Function (not the browser) so the result is authoritative, identical for every member, and able to use the service role without exposing it client-side.
 
@@ -122,8 +125,9 @@ npx supabase login
 npx supabase init            # creates supabase/config.toml (safe if the folder already exists)
 npx supabase link --project-ref <your-project-ref>
 
-# Deploy
+# Deploy both functions
 npx supabase functions deploy calculate-settlement
+npx supabase functions deploy manage-members
 ```
 
 > `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` are injected automatically by the platform — no manual secrets required.
@@ -204,7 +208,8 @@ tripbuddr/
 │   └── index.css            # Tailwind entry
 ├── supabase/
 │   └── functions/
-│       └── calculate-settlement/   # "Who owes whom" Edge Function
+│       ├── calculate-settlement/   # "Who owes whom" Edge Function
+│       └── manage-members/         # List members + invite (Edge Function)
 ├── .env.example             # Template for Supabase credentials
 ├── index.html
 ├── vite.config.js
