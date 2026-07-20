@@ -1,4 +1,4 @@
-# 🧳 TripBuddy
+# TripBuddy
 
 > An all-in-one web app for groups of friends to plan a trip together — one shared itinerary and one shared expense ledger, so nobody is left guessing about the schedule or the split.
 
@@ -6,7 +6,7 @@ TripBuddy lets a group manage a **daily itinerary** and track **shared expenses*
 
 ---
 
-## 📖 Table of Contents
+##  Table of Contents
 
 - [General Overview](#-general-overview)
 - [The Problem](#-the-problem)
@@ -21,13 +21,13 @@ TripBuddy lets a group manage a **daily itinerary** and track **shared expenses*
 
 ---
 
-## 🌍 General Overview
+##  General Overview
 
 **TripBuddy** is a collaborative trip-planning platform for groups travelling together. It combines a **day-by-day itinerary builder** and a **shared-expense tracker** into one application, giving every member of the group a single source of truth for what the plan is and who paid for what.
 
 ---
 
-## 🎯 The Problem
+##  The Problem
 
 Planning a group trip is fragmented and stressful. In practice, a group ends up juggling:
 
@@ -41,7 +41,7 @@ The result is duplicated effort, lost information, and friction between friends 
 
 ---
 
-## 👥 Target Audience
+##  Target Audience
 
 TripBuddy is built for:
 
@@ -75,18 +75,18 @@ TripBuddy's advantage is **consolidation with context**:
 
 ---
 
-## ✨ Features
+##  Features
 
-- 🔐 **Authentication** — email/password sign-up and sign-in, with protected routes.
-- 🧭 **Dashboard** — see all trips you belong to; create a new trip from a modal.
-- 📅 **Trip Details** — a dedicated page per trip with a tabbed **Itinerary** / **Expenses** interface.
-- 🗓️ **Itinerary** — add activities (title, date, start time, location); they're grouped by day into a clean timeline.
-- 💸 **Expenses** — log **categorised** shared expenses (Food, Transport, Accommodation, Activities, Other) with a live running **Total Expenses** summary.
-- 🤝 **Settlement plan** — a Supabase Edge Function computes the minimal set of payments to settle the group up.
-- 👥 **Trip members** — see who's on a trip and invite collaborators by email or user ID.
-- 🗑️ **Full CRUD** — add and delete activities and expenses, with instant optimistic UI updates.
-- ⚡ **Instant UI updates** — new trips, activities, and expenses appear immediately without a page refresh.
-- 📱 **Responsive design** — built mobile-first with Tailwind CSS.
+-  **Authentication** — email/password sign-up and sign-in, with protected routes.
+-  **Dashboard** — see all trips you belong to; create a new trip from a modal.
+-  **Trip Details** — a dedicated page per trip with a tabbed **Itinerary** / **Expenses** interface.
+-  **Itinerary** — add activities (title, date, start time, location); they're grouped by day into a clean timeline.
+-  **Expenses** — log **categorised** shared expenses (Food, Transport, Accommodation, Activities, Other) with a live running **Total Expenses** summary.
+-  **Settlement plan** — a Supabase Edge Function computes the minimal set of payments to settle the group up.
+-  **Trip members** — see who's on a trip and invite collaborators by email or user ID.
+-  **Full CRUD** — add and delete activities and expenses, with instant optimistic UI updates.
+-  **Instant UI updates** — new trips, activities, and expenses appear immediately without a page refresh.
+-  **Responsive design** — built mobile-first with Tailwind CSS.
 
 ---
 
@@ -103,7 +103,7 @@ TripBuddy's advantage is **consolidation with context**:
 
 ---
 
-## 🔌 External Services & Integrations
+##  External Services & Integrations
 
 TripBuddy relies on the **Supabase** platform for its entire backend. The individual services used are:
 
@@ -194,7 +194,7 @@ The app will be available at **http://localhost:5173**.
 
 ---
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 tripbuddr/
@@ -218,7 +218,7 @@ tripbuddr/
 
 ---
 
-## 🗄️ Database Schema
+##  Database Schema
 
 TripBuddy uses four related tables:
 
