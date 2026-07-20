@@ -54,7 +54,7 @@ The product assumes a group of **non-technical users** who value a simple, visua
 
 ---
 
-## 🏆 Competitors & Differentiation
+##  Competitors & Differentiation
 
 Groups today stitch together several general-purpose tools. Each solves *part* of the problem but none solves all of it:
 
@@ -90,7 +90,7 @@ TripBuddy's advantage is **consolidation with context**:
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
@@ -134,7 +134,7 @@ npx supabase functions deploy manage-members
 
 ---
 
-## 🚀 Running the Project Locally
+##  Running the Project Locally
 
 ### Prerequisites
 
